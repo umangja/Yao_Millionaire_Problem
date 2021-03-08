@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+  <div id="app">
+    {% csrf_token %}
+    <v-app>
+      <v-main>
+        <v-container>
+            <v-text-field
+            label="Alice Wealth in Million"
+            outlined
+            v-model="alice"
+          ></v-text-field>
+          <v-text-field
+          label="Bob Wealth in Million"
+          outlined
+          v-model="bob"
+        ></v-text-field>
+        <v-text-field
+        label="Wealth Compared"
+        outlined
+        disabled
+        v-model="message"
+      ></v-text-field>
+      <v-btn @click="toogleshow()">
+      <v-icon
+      large
+      color="green darken-2" v-if="!show">
+      mdi-eye
+    </v-icon>
+    <v-icon
+    large
+    color="green darken-2" v-if="show">
+    mdi-eye-off
+  </v-icon>
+  </v-btn>
+  <template v-show="show">
+      <v-subheader v-show="show">Alice T matrix</v-subheader>
+      <v-simple-table dark v-show="show">
+        <template v-slot:default>
+         <tbody>
+           <tr>
+             <td v-for="item in alicematrix[0]" :key="item">
+              [[ item ]]
+             </td>
+           </tr>
+           <tr>
+            <td v-for="item in alicematrix[1]" :key="item">
+             [[ item ]]
+            </td>
+          </tr>
+         </tbody>
+        </template>
+      </v-simple-table>
+      <br>
+      <v-subheader v-show="show">Bob C matrix</v-subheader>
+      <v-simple-table dark v-show="show">
+        <template v-slot:default>
+         <tbody>
+           <tr>
+             <td v-for="item in bobmatrix" :key="item">
+              [[ item ]]
+             </td>
+           </tr>
+          </tr>
+         </tbody>
+        </template>
+      </v-simple-table>
+    </template>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script>
+    new Vue({
+    delimiters: ["[[", "]]"],
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+    message: 'Alice is Richer than bob',
+    alice:8,
+    bob:5,
+    alicematrix:[],
+    bobmatrix:[],
+    show:true
+  },
+  methods:{
+     getCookie: function(cname) {
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+},
+toogleshow: function(){
+  this.show=!this.show
+}
+  },
+  created(){
+  console.log("hello");
+  if (this.alice=="")
+      return 0;
+        let data = {x:this.alice,y:this.bob};
+        let csrftoken = this.getCookie('csrftoken');
+        fetch("getricher/", {
+        method: "POST", 
+        body: JSON.stringify(data),
+        headers: { "X-CSRFToken": csrftoken },
+        }).then(res=>res.json()).then(res => {
+        console.log("Request complete! response:", res["result"]);
+        if(res["result"]==1){
+            this.message="Alice is Richer than bob";
+        }
+        else{
+            this.message="Bob is Richer than Alice";
+        }
+        this.alicematrix=res["T"];
+        this.bobmatrix=res["C"];
+        });
+},
+  watch: {
+    alice: function () {
+      if (this.alice=="")
+      return 0;
+        let data = {x:this.alice,y:this.bob};
+        let csrftoken = this.getCookie('csrftoken');
+        fetch("getricher/", {
+        method: "POST", 
+        body: JSON.stringify(data),
+        headers: { "X-CSRFToken": csrftoken },
+        }).then(res=>res.json()).then(res => {
+        console.log("Request complete! response:", res["result"]);
+        if(res["result"]==1){
+            this.message="Alice is Richer than bob";
+        }
+        else{
+            this.message="Bob is Richer than Alice";
+        }
+        this.alicematrix=res["T"];
+        this.bobmatrix=res["C"];
+        });
+        
+    },
+    bob: function () {
+      if (this.bob=="")
+      return 0;
+        let data = {x:this.alice,y:this.bob};
+        let csrftoken = this.getCookie('csrftoken');
+        fetch("getricher/", {
+        method: "POST", 
+        body: JSON.stringify(data),
+        headers: { "X-CSRFToken": csrftoken },
+        }).then(res=>res.json()).then(res => {
+        // console.log("Request complete! response:", res["result"],res["T"],res["C"]);
+        if(res["result"]==1){
+            this.message="Alice is Richer than bob";
+        }
+        else{
+            this.message="Bob is Richer than Alice";
+        }
+        this.alicematrix=res["T"];
+        this.bobmatrix=res["C"];
+        });
+        
+    }
+  }
+    })
+  </script>
+</body>
+</html>
